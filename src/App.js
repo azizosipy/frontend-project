@@ -1,23 +1,16 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from "react";
+import PdfViewer from "./PdfViewer";
+import "./index.css";
+import Body from "./Repr.js";
+import Header from "./Header";
+import AlertS from "./alertS.js"; // Make sure to import AlertS with uppercase
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="App  font-mono">
+      <Header />
+      <AlertS /> {/* Use AlertS with uppercase */}
+      <Body />
     </div>
   );
 }
