@@ -1,44 +1,43 @@
 import React, { useState } from "react";
 import PdfViewer from "./PdfViewer";
+import axios from "axios"; // Import axios
 
 const Body = () => {
   const [file, setFile] = useState(null);
   const [isFileUploaded, setIsFileUploaded] = useState(false);
   const [isUploading, setIsUploading] = useState(false); // Loading state
-  const [title, setTitle] = useState(""); // New state for title
-  const [description, setDescription] = useState(""); // New state for description
 
   // Handle file selection
   const onFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile && selectedFile.type === "application/pdf") {
-      setFile(URL.createObjectURL(selectedFile)); // Create a URL for the selected file
+      setFile(selectedFile); // Store the file itself, not the URL
       setIsFileUploaded(false); // Reset upload status when a new file is selected
     } else {
       alert("Please select a valid PDF file.");
     }
   };
 
-  // Function to send the file to the Django backend
+  // Function to send the file to the Django backend using axios
   const uploadFile = async (file) => {
     setIsUploading(true); // Set loading to true when upload starts
     const formData = new FormData();
-    formData.append("pdf_file", file); // Append the file to the FormData
-    formData.append("title", title); // Add title to form data
-    formData.append("description", description); // Add description to form data
+    formData.append("file", file); // Append the file to the FormData
 
     try {
-      const response = await fetch("http://localhost:8000/upload_pdf/", {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-        },
-        body: formData, // Attach the FormData to the body of the request
-      });
+      // Using axios to send the POST request with form data
+      const response = await axios.post(
+        "http://127.0.0.1:8000/api/upload/",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data", // Set content type for file upload
+          },
+        }
+      );
 
-      if (response.ok) {
-        const data = await response.json();
-        console.log("File uploaded successfully:", data);
+      if (response.status === 200) {
+        console.log("File uploaded successfully:", response.data);
         setIsFileUploaded(true); // Set the file upload status to true
       } else {
         console.error("Failed to upload file.");
@@ -63,10 +62,10 @@ const Body = () => {
 
   // Function to handle the Submit button click
   const handleSubmit = () => {
-    if (title && description && file) {
-      uploadFile(file); // Upload the file and send data to backend
+    if (file) {
+      uploadFile(file); // Upload the file to the backend
     } else {
-      alert("Please fill out all fields and upload a PDF.");
+      alert("Please upload a PDF file.");
     }
   };
 
@@ -97,7 +96,7 @@ const Body = () => {
         </div>
       </div>
 
-      {/* File Selection and Input Fields */}
+      {/* File Selection Section */}
       <div className="w-full py-9 bg-gray-50 rounded-2xl border border-gray-300 gap-3 grid border-dashed">
         <div className="grid gap-1">
           <svg
@@ -134,26 +133,9 @@ const Body = () => {
         </div>
       </div>
 
-      {/* Title and Description Fields */}
-      <div className="mt-4">
-        <input
-          type="text"
-          placeholder="Enter title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="w-full p-2 border border-gray-300 rounded-md"
-        />
-        <textarea
-          placeholder="Enter description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="w-full p-2 mt-2 border border-gray-300 rounded-md"
-        ></textarea>
-      </div>
-
       {/* Render PdfViewer component if file is selected */}
       {file && !isFileUploaded ? (
-        <PdfViewer file={file} />
+        <PdfViewer file={URL.createObjectURL(file)} /> // Pass the URL for rendering
       ) : (
         <p>Please upload and analyze the file.</p>
       )}
